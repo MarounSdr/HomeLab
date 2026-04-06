@@ -220,27 +220,69 @@ SHOW SCHEMAS IN nessie;
 
 ## Object Storage — First Time Setup
 
-After `make up` you need to create one bucket manually before writing any Iceberg tables.
+After `make up` you need to create buckets manually on both storage backends before writing any Iceberg tables. Neither MinIO nor SeaweedFS auto-creates buckets.
 
-**MinIO — create the `warehouse` bucket:**
-1. Go to `http://localhost:10021` (MinIO Console)
+---
+
+### MinIO — create the `warehouse` bucket
+
+**Option A — MinIO Console:**
+1. Go to `http://localhost:10021`
 2. Login with `admin_key` / `admin_secret`
 3. Click **Buckets → Create Bucket**
-4. Name it `warehouse`
-5. Click **Create**
+4. Name it `warehouse` → click **Create**
 
-This is the bucket Trino and Dremio will use as the default warehouse location for all Iceberg tables.
+**Option B — terminal:**
+```bash
+sudo docker compose exec minio sh -c "
+  mc alias set local http://localhost:9000 admin_key admin_secret &&
+  mc mb local/warehouse
+"
+```
 
-**SeaweedFS — nothing needed.** SeaweedFS auto-creates buckets on first write. The `warehouse` bucket for Iceberg and the `kestra` bucket for Kestra workflows will both be created automatically when first used.
+---
 
-### Why the difference?
+### SeaweedFS — create the `warehouse` and `kestra` buckets
 
-MinIO is strict by design — it never creates buckets automatically, which prevents accidental data sprawl in production. SeaweedFS is permissive by design — it prioritises flexibility for operational workloads. This stack uses them accordingly:
+SeaweedFS doesn't have a browser UI for bucket management. Use the MinIO client (`mc`) from inside the MinIO container to talk to SeaweedFS:
 
-| Storage | Purpose | Bucket behaviour |
-|---|---|---|
-| MinIO | Your data — Iceberg tables, analytics | Manual creation — you control what exists |
-| SeaweedFS | Internal tooling — Kestra, operational data | Auto-created on first write |
+```bash
+sudo docker compose exec minio sh -c "
+  mc alias set swfs http://seaweedfs-s3:8333 admin_key admin_secret &&
+  mc mb swfs/warehouse &&
+  mc mb swfs/kestra &&
+  mc ls swfs
+"
+```
+
+You should see both buckets listed after running this.
+
+---
+
+### Why both require manual creation
+
+Both MinIO and SeaweedFS require explicit bucket creation — neither auto-creates buckets on first write. This is intentional: automatic bucket creation can cause silent data sprawl when a path typo creates an unintended bucket. Manual creation keeps you in control of what exists.
+
+---
+
+### SeaweedFS UI — the `buckets/` prefix explained
+
+In the SeaweedFS filer UI you will see this structure:
+
+```
+buckets/
+  └── warehouse/     ← your bucket
+  └── kestra/        ← your bucket
+```
+
+The `buckets/` prefix is SeaweedFS's internal filesystem representation — it is not part of the actual S3 path. From Spark, Trino, and Dremio the path is simply:
+
+```
+s3://warehouse/      ← correct
+s3://buckets/warehouse/   ← wrong, never use this
+```
+
+The `buckets/` prefix is only visible in the SeaweedFS filer UI and is invisible to all S3-compatible clients.
 
 ---
 
