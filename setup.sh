@@ -713,15 +713,15 @@ cat > trino_catalogs/iceberg_minio_main.properties << TRINOCAT
 # =============================================================
 connector.name=iceberg
 iceberg.catalog.type=nessie
-iceberg.nessie.uri=http://nessie-minio:19120/api/v2
-iceberg.nessie.default-reference.name=main
-iceberg.nessie.authentication.type=NONE
-hive.s3.endpoint=http://minio:9000
-hive.s3.path-style-access=true
-hive.s3.aws-access-key=${S3_KEY}
-hive.s3.aws-secret-key=${S3_SECRET}
-hive.s3.region=${S3_REGION}
-hive.s3.ssl.enabled=false
+iceberg.nessie-catalog.default-warehouse-dir=s3://warehouse/
+iceberg.nessie-catalog.uri=http://nessie-minio:19120/api/v2
+iceberg.nessie-catalog.ref=main
+fs.native-s3.enabled=true
+s3.endpoint=http://minio:9000
+s3.path-style-access=true
+s3.aws-access-key=${S3_KEY}
+s3.aws-secret-key=${S3_SECRET}
+s3.region=${S3_REGION}
 TRINOCAT
 ok "Created trino_catalogs/iceberg_minio_main.properties"
 
@@ -736,15 +736,15 @@ cat > trino_catalogs/iceberg_minio_dev.properties << TRINOCAT
 # =============================================================
 connector.name=iceberg
 iceberg.catalog.type=nessie
-iceberg.nessie.uri=http://nessie-minio:19120/api/v2
-iceberg.nessie.default-reference.name=dev
-iceberg.nessie.authentication.type=NONE
-hive.s3.endpoint=http://minio:9000
-hive.s3.path-style-access=true
-hive.s3.aws-access-key=${S3_KEY}
-hive.s3.aws-secret-key=${S3_SECRET}
-hive.s3.region=${S3_REGION}
-hive.s3.ssl.enabled=false
+iceberg.nessie-catalog.default-warehouse-dir=s3://warehouse/
+iceberg.nessie-catalog.uri=http://nessie-minio:19120/api/v2
+iceberg.nessie-catalog.ref=dev
+fs.native-s3.enabled=true
+s3.endpoint=http://minio:9000
+s3.path-style-access=true
+s3.aws-access-key=${S3_KEY}
+s3.aws-secret-key=${S3_SECRET}
+s3.region=${S3_REGION}
 TRINOCAT
 ok "Created trino_catalogs/iceberg_minio_dev.properties"
 
@@ -759,15 +759,15 @@ cat > trino_catalogs/iceberg_swfs_main.properties << TRINOCAT
 # =============================================================
 connector.name=iceberg
 iceberg.catalog.type=nessie
-iceberg.nessie.uri=http://nessie-swfs:19120/api/v2
-iceberg.nessie.default-reference.name=main
-iceberg.nessie.authentication.type=NONE
-hive.s3.endpoint=http://seaweedfs-s3:8333
-hive.s3.path-style-access=true
-hive.s3.aws-access-key=${S3_KEY}
-hive.s3.aws-secret-key=${S3_SECRET}
-hive.s3.region=${S3_REGION}
-hive.s3.ssl.enabled=false
+iceberg.nessie-catalog.default-warehouse-dir=s3://warehouse/
+iceberg.nessie-catalog.uri=http://nessie-swfs:19120/api/v2
+iceberg.nessie-catalog.ref=main
+fs.native-s3.enabled=true
+s3.endpoint=http://seaweedfs-s3:8333
+s3.path-style-access=true
+s3.aws-access-key=${S3_KEY}
+s3.aws-secret-key=${S3_SECRET}
+s3.region=${S3_REGION}
 TRINOCAT
 ok "Created trino_catalogs/iceberg_swfs_main.properties"
 
@@ -782,15 +782,15 @@ cat > trino_catalogs/iceberg_swfs_dev.properties << TRINOCAT
 # =============================================================
 connector.name=iceberg
 iceberg.catalog.type=nessie
-iceberg.nessie.uri=http://nessie-swfs:19120/api/v2
-iceberg.nessie.default-reference.name=dev
-iceberg.nessie.authentication.type=NONE
-hive.s3.endpoint=http://seaweedfs-s3:8333
-hive.s3.path-style-access=true
-hive.s3.aws-access-key=${S3_KEY}
-hive.s3.aws-secret-key=${S3_SECRET}
-hive.s3.region=${S3_REGION}
-hive.s3.ssl.enabled=false
+iceberg.nessie-catalog.default-warehouse-dir=s3://warehouse/
+iceberg.nessie-catalog.uri=http://nessie-swfs:19120/api/v2
+iceberg.nessie-catalog.ref=dev
+fs.native-s3.enabled=true
+s3.endpoint=http://seaweedfs-s3:8333
+s3.path-style-access=true
+s3.aws-access-key=${S3_KEY}
+s3.aws-secret-key=${S3_SECRET}
+s3.region=${S3_REGION}
 TRINOCAT
 ok "Created trino_catalogs/iceberg_swfs_dev.properties"
 

@@ -453,6 +453,8 @@ The `dbt_project/` folder is bind-mounted — edit files locally and they are in
 
 **Trino can't connect to Nessie** — Nessie may still be starting. Check `docker compose logs nessie-minio` or `docker compose logs nessie-swfs`.
 
+**Trino fails to start with catalog property errors** — catalog property names changed in Trino 480+. This stack is tested against Trino 480. If you pinned an older version, the `iceberg.nessie-catalog.*` and `s3.*` property names may differ.
+
 **Trino credentials wrong after changing `.env`** — catalog files are generated once and are not updated automatically. Run `make reset && make up` to regenerate them.
 
 **DBeaver can't connect to Dremio** — make sure you completed the first-run wizard in the browser at `http://localhost:10006` first, and that you updated the Dremio JDBC driver JAR as described in the DBeaver section above.
