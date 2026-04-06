@@ -218,6 +218,32 @@ SHOW SCHEMAS IN nessie;
 
 ---
 
+## Object Storage — First Time Setup
+
+After `make up` you need to create one bucket manually before writing any Iceberg tables.
+
+**MinIO — create the `warehouse` bucket:**
+1. Go to `http://localhost:10021` (MinIO Console)
+2. Login with `admin_key` / `admin_secret`
+3. Click **Buckets → Create Bucket**
+4. Name it `warehouse`
+5. Click **Create**
+
+This is the bucket Trino and Dremio will use as the default warehouse location for all Iceberg tables.
+
+**SeaweedFS — nothing needed.** SeaweedFS auto-creates buckets on first write. The `warehouse` bucket for Iceberg and the `kestra` bucket for Kestra workflows will both be created automatically when first used.
+
+### Why the difference?
+
+MinIO is strict by design — it never creates buckets automatically, which prevents accidental data sprawl in production. SeaweedFS is permissive by design — it prioritises flexibility for operational workloads. This stack uses them accordingly:
+
+| Storage | Purpose | Bucket behaviour |
+|---|---|---|
+| MinIO | Your data — Iceberg tables, analytics | Manual creation — you control what exists |
+| SeaweedFS | Internal tooling — Kestra, operational data | Auto-created on first write |
+
+---
+
 ## Trino — Catalogs & Usage
 
 Six catalogs are pre-configured and ready immediately after `make up`.
