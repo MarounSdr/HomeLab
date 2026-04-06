@@ -902,6 +902,48 @@ if [ "$TRIES" -le 60 ]; then
 fi
 
 # =============================================================================
+# CREATE OBJECT STORAGE BUCKETS
+# =============================================================================
+info "Creating object storage buckets…"
+
+# Read S3 credentials from .env
+S3_KEY_VAL=$(grep '^S3_ACCESS_KEY=' .env | cut -d= -f2 | tr -d '[:space:]')
+S3_SECRET_VAL=$(grep '^S3_SECRET_KEY=' .env | cut -d= -f2 | tr -d '[:space:]')
+
+# Wait for MinIO to be ready
+info "Waiting for MinIO to become ready…"
+TRIES=0
+until $COMPOSE exec -T minio mc alias set local http://localhost:9000   "${S3_KEY_VAL}" "${S3_SECRET_VAL}" >/dev/null 2>&1; do
+  TRIES=$((TRIES+1))
+  if [ "$TRIES" -gt 30 ]; then
+    warn "MinIO did not become ready in time — create the warehouse bucket manually"
+    break
+  fi
+  sleep 2
+done
+
+if [ "$TRIES" -le 30 ]; then
+  # MinIO — warehouse bucket
+  $COMPOSE exec -T minio sh -c     "mc alias set local http://localhost:9000 ${S3_KEY_VAL} ${S3_SECRET_VAL} >/dev/null 2>&1 &&      mc mb --ignore-existing local/warehouse >/dev/null 2>&1"     && ok "MinIO: warehouse bucket ready"     || warn "MinIO: could not create warehouse bucket — create it manually at http://localhost:10021"
+
+  # SeaweedFS — wait then create warehouse + kestra buckets
+  info "Waiting for SeaweedFS to become ready…"
+  TRIES=0
+  until $COMPOSE exec -T minio sh -c     "mc alias set swfs http://seaweedfs-s3:8333 ${S3_KEY_VAL} ${S3_SECRET_VAL} >/dev/null 2>&1 &&      mc ls swfs >/dev/null 2>&1"; do
+    TRIES=$((TRIES+1))
+    if [ "$TRIES" -gt 30 ]; then
+      warn "SeaweedFS did not become ready in time — create buckets manually"
+      break
+    fi
+    sleep 2
+  done
+
+  if [ "$TRIES" -le 30 ]; then
+    $COMPOSE exec -T minio sh -c       "mc alias set swfs http://seaweedfs-s3:8333 ${S3_KEY_VAL} ${S3_SECRET_VAL} >/dev/null 2>&1 &&        mc mb --ignore-existing swfs/warehouse >/dev/null 2>&1 &&        mc mb --ignore-existing swfs/kestra >/dev/null 2>&1"       && ok "SeaweedFS: warehouse + kestra buckets ready"       || warn "SeaweedFS: could not create buckets — create them manually"
+  fi
+fi
+
+# =============================================================================
 # SUMMARY
 # =============================================================================
 echo ""
